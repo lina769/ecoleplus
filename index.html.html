@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>EcolePlus – Plateforme SaaS de gestion d’écoles</title>
+<style>
+:root{--bg:#f3f1ea;--sf:#fffefb;--tx:#1b2b34;--mu:#5d6e76;--ac:#0f5e73;--ac2:#dcecf0;--bd:#d9d5c8;--dn:#b3402f;--hl:#e8a33d;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10181c;--sf:#18242a;--tx:#e6eef1;--mu:#93a7af;--ac:#5cb8d1;--ac2:#1d3a44;--bd:#2c3d44;--dn:#e8806d;--hl:#e8a33d;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#10181c;--sf:#18242a;--tx:#e6eef1;--mu:#93a7af;--ac:#5cb8d1;--ac2:#1d3a44;--bd:#2c3d44;--dn:#e8806d;--hl:#e8a33d;color-scheme:dark}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;min-height:100%;background:var(--bg);color:var(--tx);font:15px/1.55 Georgia,"Times New Roman",serif}
+h2,h3,nav,button,th,label,small,.tag{font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+h2{margin:0;font-size:24px}h3{margin:0 0 8px}
+.lay{display:flex;min-height:100%}
+nav{width:236px;background:var(--ac);color:#fff;padding:14px 10px;display:flex;flex-direction:column;gap:2px;flex-shrink:0}
+.brand{font:700 17px/1.25 Georgia,serif;padding:6px 8px 14px;border-bottom:3px solid var(--hl);margin-bottom:8px}
+.brand small{display:block;font-weight:400;font-size:12px;opacity:.85;margin-top:4px}
+nav a{padding:8px 10px;border-radius:8px;cursor:pointer;color:#fff;opacity:.88;font-size:14px}
+nav a:hover,nav a:focus-visible{opacity:1;background:#ffffff22;outline:none}
+nav a.on{background:#fff;color:var(--ac);opacity:1;font-weight:600}
+nav i{background:var(--hl);color:#1b2b34;border-radius:9px;padding:0 6px;font-size:12px;margin-left:6px;font-style:normal}
+main{flex:1;padding:20px;min-width:0}
+button{background:var(--ac);color:#fff;border:0;padding:8px 14px;border-radius:8px;cursor:pointer;font-size:14px}
+button.g{background:transparent;color:var(--ac);border:1px solid var(--bd)}button.d{background:var(--dn)}button.sm{padding:3px 9px;font-size:13px}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--hl);outline-offset:1px}
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:14px;margin:0 0 10px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-top:8px}
+.big{font-size:26px;font-weight:700;color:var(--ac)}
+.tw{overflow-x:auto;border:1px solid var(--bd);border-radius:10px}
+table{border-collapse:collapse;width:100%;background:var(--sf)}
+th,td{padding:8px 11px;border-bottom:1px solid var(--bd);text-align:left;white-space:nowrap}
+th{font-size:12px;color:var(--mu);font-weight:600}
+.bar{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin:4px 0 14px}
+label{display:block;margin:9px 0;font-size:13px;color:var(--mu)}
+input,select,textarea{display:block;width:100%;padding:8px;margin-top:3px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);font:inherit}
+#modal{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;padding:14px;z-index:9}
+#modal.on{display:flex}
+#modal>div{background:var(--sf);border-radius:12px;padding:18px;width:min(480px,100%);max-height:90%;overflow:auto}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.tag{font-size:12px;padding:2px 8px;border-radius:9px;background:var(--ac2);color:var(--ac)}
+.login{max-width:430px;margin:5vh auto;padding:0 12px}
+.empty{color:var(--mu);padding:18px;text-align:center}
+@media(max-width:720px){.lay{flex-direction:column}nav{width:100%;flex-direction:row;overflow-x:auto}nav a{white-space:nowrap}.brand{display:none}}
+@media print{.np,button{display:none!important}#modal{position:static;background:none}nav{display:none}}
+</style></head>
+<body>
+<div id="app"></div><div id="modal"></div>
+<script>
+const KEY="ecole_saas_v1",AN="2026-2027",TARIF=1500;
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const rnd=()=>Math.random().toString(36).slice(2,8);
+const today=()=>new Date().toISOString().slice(0,10);
+const S=a=>a.map(o=>Object.assign({annee_scolaire:AN,deleted:false},o));
+function seed(){return{
+enseignants:S([{id:"ens1",nom:"Salma Trabelsi",email:"salma@ecole.tn"},{id:"ens2",nom:"Karim Jebali",email:"karim@ecole.tn"}]),
+parents:S([{id:"par1",nom:"Mohamed Ben Ali",email:"m.benali@mail.tn",tel:"20 111 222"},{id:"par2",nom:"Leila Gharbi",email:"l.gharbi@mail.tn",tel:""}]),
+classes:S([{id:"cla1",niveau:"CP",section:"A",capacite:25,titulaire:"ens1"},{id:"cla2",niveau:"CE1",section:"A",capacite:25,titulaire:"ens2"}]),
+matieres:S([{id:"mat1",nom:"Arabe",coefficient:3,niveau:"Tous"},{id:"mat2",nom:"Français",coefficient:3,niveau:"Tous"},{id:"mat3",nom:"Mathématiques",coefficient:3,niveau:"Tous"},{id:"mat4",nom:"Éveil scientifique",coefficient:1,niveau:"Tous"}]),
+eleves:S([{id:"elv1",nom:"Yassine Ben Ali",naissance:"2019-04-12",classe:"cla1",parent:"par1",statut:"Inscrit",medical:""},{id:"elv2",nom:"Nour Ben Ali",naissance:"2018-02-03",classe:"cla2",parent:"par1",statut:"Inscrit",medical:"Allergie aux arachides"},{id:"elv3",nom:"Adam Gharbi",naissance:"2018-09-21",classe:"cla2",parent:"par2",statut:"Inscrit",medical:""}]),
+salles:S([{id:"sal1",nom:"Salle 1",capacite:25,disponible:"Oui"},{id:"sal2",nom:"Salle 2",capacite:25,disponible:"Oui"}]),
+paiements:S([{id:"pai1",eleve:"elv1",montant:500,mode:"Espèces",date:"2026-09-15"}]),
+notes:S([{id:"not1",eleve:"elv1",matiere:"mat1",evaluation:"Contrôle 1",trimestre:"T1",valeur:15},{id:"not2",eleve:"elv1",matiere:"mat3",evaluation:"Contrôle 1",trimestre:"T1",valeur:12},{id:"not3",eleve:"elv1",matiere:"mat2",evaluation:"Dictée",trimestre:"T1",valeur:14},{id:"not4",eleve:"elv2",matiere:"mat3",evaluation:"Contrôle 1",trimestre:"T1",valeur:17}]),
+devoirs:S([{id:"dev1",titre:"Exercices de calcul page 12",matiere:"mat3",classe:"cla2",remise:"2026-11-02",description:"Faire les exercices 1 à 5.",vu:[]}]),
+messages:[],journal:[]}}
+const PLANS={Gratuit:{max:30,prix:0},Standard:{max:200,prix:49},Premium:{max:99999,prix:99}};
+const emptyData=()=>{const s=seed();Object.keys(s).forEach(k=>{s[k]=[]});return s};
+const seedRoot=()=>({ecoles:[{id:"ecl1",nom:"École Abou El Kacem Chebbi",slug:"aboukacem",plan:"Standard",statut:"Actif",cree:"2026-09-01",data:seed()}]});
+let root=null,db=null,curE=null;try{root=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+if(!root||!root.ecoles)root=seedRoot();
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(root))}catch(e){}};
+let me=null,view="dash",mtab="in",bsel="",btri="all";
+const vis=e=>db[e].filter(r=>!r.deleted);
+const byId=(e,id)=>db[e].find(r=>r.id===id);
+const nm=(e,id)=>{const r=byId(e,id);return r?E[e].n(r):"—"};
+const solde=id=>TARIF-vis("paiements").filter(p=>p.eleve===id).reduce((s,p)=>s+p.montant,0);
+const log=(a,e,id,d)=>{if(!db||(me&&me.role==="super"))return;db.journal.unshift({t:new Date().toLocaleString("fr-FR"),u:me?me.nom:"Public",a,e,id,d})};
+const E={
+classes:{l:"Classes",s:"classe",n:r=>r.niveau+" "+r.section,cols:["niveau","section","capacite","titulaire","annee_scolaire"],f:[{k:"niveau",l:"Niveau",t:"sel",o:["CP","CE1","CE2","CE3","CM1","CM2"]},{k:"section",l:"Section"},{k:"capacite",l:"Capacité maximale",t:"number"},{k:"titulaire",l:"Enseignant titulaire",t:"ref",r:"enseignants"}]},
+matieres:{l:"Matières",s:"matière",n:r=>r.nom,cols:["nom","coefficient","niveau"],f:[{k:"nom",l:"Nom"},{k:"coefficient",l:"Coefficient",t:"number"},{k:"niveau",l:"Niveau concerné",t:"sel",o:["Tous","CP","CE1","CE2","CE3","CM1","CM2"]}]},
+enseignants:{l:"Enseignants",s:"enseignant",n:r=>r.nom,cols:["nom","email"],f:[{k:"nom",l:"Nom complet"},{k:"email",l:"E-mail",t:"email"}]},
+parents:{l:"Parents",s:"parent",n:r=>r.nom,cols:["nom","email","tel"],f:[{k:"nom",l:"Nom complet"},{k:"email",l:"E-mail",t:"email"},{k:"tel",l:"Téléphone",opt:1}]},
+eleves:{l:"Élèves",s:"élève",n:r=>r.nom,cols:["nom","naissance","classe","parent","statut"],f:[{k:"nom",l:"Nom complet"},{k:"naissance",l:"Date de naissance",t:"date"},{k:"classe",l:"Classe",t:"ref",r:"classes",opt:1},{k:"parent",l:"Parent / tuteur",t:"ref",r:"parents"},{k:"statut",l:"Statut",t:"sel",o:["Inscrit","En attente"]},{k:"medical",l:"Antécédents médicaux",t:"area",opt:1}],
+ v:(d,id)=>{if(!id&&vis("eleves").length>=PLANS[curE.plan].max)return"Limite du plan "+curE.plan+" atteinte ("+PLANS[curE.plan].max+" élèves). Contactez la plateforme pour changer de plan.";if(d.classe){const c=byId("classes",d.classe),n=vis("eleves").filter(x=>x.classe===d.classe&&x.id!==id).length;if(n>=c.capacite)return"Capacité maximale de la classe atteinte ("+c.capacite+")."}}},
+salles:{l:"Salles",s:"salle",n:r=>r.nom,cols:["nom","capacite","disponible"],f:[{k:"nom",l:"Nom"},{k:"capacite",l:"Capacité",t:"number"},{k:"disponible",l:"Disponible",t:"sel",o:["Oui","Non"]}]},
+paiements:{l:"Paiements",s:"paiement",n:r=>r.date+" – "+r.montant+" DT",def:()=>({date:today(),mode:"Espèces"}),cols:["date","eleve","montant","mode"],f:[{k:"eleve",l:"Élève",t:"ref",r:"eleves"},{k:"montant",l:"Montant (DT)",t:"number"},{k:"mode",l:"Mode",t:"sel",o:["Espèces","Virement","Mobile money"]},{k:"date",l:"Date",t:"date"}],
+ v:d=>d.montant>0?null:"Le montant doit être supérieur à 0.",
+ after:r=>{const el=byId("eleves",r.eleve);if(!el||!el.parent)return;db.messages.push({id:"msg"+Date.now()+rnd(),type:"msg",from:me.id,to:el.parent,objet:"Paiement enregistré – "+el.nom,corps:"Montant payé : "+r.montant+" DT\nDate : "+r.date+" – Mode : "+r.mode+"\nNouveau solde restant : "+solde(el.id)+" DT\nReçu : onglet Paiements, bouton « Reçu ».",statut:"sent",date:new Date().toLocaleString("fr-FR"),lu:[],hidden:[]});log("Notification paiement","messages",r.id,"Envoyée au parent "+el.parent+" – statut : envoyée")}},
+notes:{l:"Notes",s:"note",n:r=>r.valeur+"/20",def:()=>({trimestre:"T1"}),cols:["eleve","matiere","evaluation","trimestre","valeur"],f:[{k:"eleve",l:"Élève",t:"ref",r:"eleves"},{k:"matiere",l:"Matière",t:"ref",r:"matieres"},{k:"evaluation",l:"Évaluation (ex. Contrôle 1)"},{k:"trimestre",l:"Trimestre",t:"sel",o:["T1","T2","T3"]},{k:"valeur",l:"Note sur 20",t:"number",max:20}],
+ v:d=>d.valeur>=0&&d.valeur<=20?null:"La note doit être comprise entre 0 et 20."},
+devoirs:{l:"Devoirs",s:"devoir",n:r=>r.titre,cols:["titre","matiere","classe","remise"],f:[{k:"titre",l:"Titre"},{k:"matiere",l:"Matière",t:"ref",r:"matieres"},{k:"classe",l:"Classe",t:"ref",r:"classes"},{k:"remise",l:"Date de remise",t:"date"},{k:"description",l:"Description",t:"area",opt:1}]}};
+const COL={nom:"Nom",email:"E-mail",tel:"Téléphone",niveau:"Niveau",section:"Section",capacite:"Capacité",titulaire:"Titulaire",annee_scolaire:"Année",coefficient:"Coef.",naissance:"Naissance",classe:"Classe",parent:"Parent",statut:"Statut",disponible:"Disponible",date:"Date",eleve:"Élève",montant:"Montant",mode:"Mode",matiere:"Matière",evaluation:"Évaluation",trimestre:"Trim.",valeur:"Note",titre:"Titre",remise:"Remise"};
+const MENU={super:["saas"],admin:["dash","eleves","parents","enseignants","classes","matieres","salles","paiements","notes","devoirs","bulletin","messages","journal"],compta:["dash","eleves","paiements","messages"],enseignant:["dash","notes","devoirs","bulletin","messages"],parent:["dash","notes","paiements","devoirs","bulletin","messages"],eleve:["dash","notes","devoirs","bulletin","messages"]};
+const CAN={compta:["paiements","eleves"],enseignant:["notes","devoirs"]};
+const ROLE={super:"Super Admin",admin:"Administrateur",compta:"Comptable",enseignant:"Enseignant",parent:"Parent",eleve:"Élève"};
+const LBL=Object.assign({saas:"Écoles clientes",dash:"Tableau de bord",bulletin:"Bulletins",messages:"Messagerie",journal:"Journal"},Object.fromEntries(Object.keys(E).map(k=>[k,E[k].l])));
+const canEdit=e=>me.role==="admin"||(CAN[me.role]||[]).includes(e);
+const mine=()=>me.role==="parent"?vis("eleves").filter(x=>x.parent===me.ref):me.role==="eleve"?vis("eleves").filter(x=>x.id===me.ref):null;
+function rows(e){let r=vis(e);const m=mine();if(m){const ids=m.map(x=>x.id),cl=m.map(x=>x.classe);if(e==="eleves")r=r.filter(x=>ids.includes(x.id));else if(e==="paiements"||e==="notes")r=r.filter(x=>ids.includes(x.eleve));else if(e==="devoirs")r=r.filter(x=>cl.includes(x.classe))}return r}
+const users=()=>[{id:"admin",nom:"Direction",role:"admin"},{id:"compta",nom:"Secrétariat / Comptabilité",role:"compta"}].concat(vis("enseignants").map(x=>({id:x.id,nom:x.nom,role:"enseignant",ref:x.id})),vis("parents").map(x=>({id:x.id,nom:x.nom,role:"parent",ref:x.id})),vis("eleves").map(x=>({id:x.id,nom:x.nom,role:"eleve",ref:x.id})));
+const uname=id=>(users().find(u=>u.id===id)||{nom:id}).nom;
+function blockers(e,id){const n=[];Object.keys(E).forEach(k=>E[k].f.forEach(f=>{if(f.t==="ref"&&f.r===e&&vis(k).some(r=>r[f.k]===id))n.push(E[k].l)}));return[...new Set(n)]}
+function calc(id,t){const by={};vis("notes").filter(n=>n.eleve===id&&(t==="all"||n.trimestre===t)).forEach(n=>{(by[n.matiere]=by[n.matiere]||[]).push(+n.valeur)});let s=0,c=0;const lines=Object.keys(by).map(m=>{const v=by[m],a=v.reduce((x,y)=>x+y,0)/v.length,k=+(byId("matieres",m)||{}).coefficient||1;s+=a*k;c+=k;return{m,a,k}});return{lines,gen:c?s/c:null}}
+/* ---------- affichage ---------- */
+const go=v=>{view=v;render()};
+function modal(h){const m=$("#modal");m.innerHTML="<div>"+h+"</div>";m.className="on"}
+const closeM=()=>{$("#modal").className=""};
+const unread=()=>db.messages.filter(m=>m.type==="msg"&&m.statut==="sent"&&m.to===me.id&&!m.hidden.includes(me.id)&&!m.lu.includes(me.id)).length;
+function render(){const a=$("#app");if(!me){a.innerHTML=loginHTML();fillU();return}
+ if(!MENU[me.role].includes(view))view=MENU[me.role][0];
+ a.innerHTML='<div class="lay"><nav class="np"><div class="brand">'+(me.role==="super"?"EcolePlus – Plateforme":esc(curE.nom))+"<small>"+esc(me.nom)+" – "+ROLE[me.role]+(me.role==="super"?"":"<br>"+curE.slug+".ecoleplus.tn")+"</small></div>"+MENU[me.role].map(k=>'<a tabindex="0" class="'+(k===view?"on":"")+'" onclick="go(\''+k+'\')" onkeydown="if(event.key===\'Enter\')go(\''+k+'\')">'+LBL[k]+(k==="messages"&&unread()?"<i>"+unread()+"</i>":"")+"</a>").join("")+'<a tabindex="0" onclick="logout()" onkeydown="if(event.key===\'Enter\')logout()">Déconnexion</a></nav><main>'+page()+"</main></div>"}
+function page(){if(view==="saas")return saas();if(view==="dash")return dash();if(view==="bulletin")return bullet();if(view==="messages")return msgView();if(view==="journal")return jrn();return list(view)}
+const C=(t,v)=>'<div class="card"><small>'+t+'</small><div class="big">'+esc(v)+"</div></div>";
+function dash(){const R=me.role;let h="<h2>Bonjour, "+esc(me.nom)+"</h2>";
+ if(R==="admin"||R==="compta"){const ins=vis("eleves").filter(x=>x.statut==="Inscrit").length,att=vis("eleves").length-ins,pay=vis("paiements").reduce((s,p)=>s+p.montant,0);h+='<div class="grid">'+C("Élèves inscrits",ins)+C("Pré-inscriptions à valider",att)+C("Classes",vis("classes").length)+C("Encaissé",pay+" DT")+C("Reste à encaisser",(ins*TARIF-pay)+" DT")+"</div>"}
+ else if(R==="enseignant")h+='<div class="grid">'+C("Mes classes",vis("classes").filter(c=>c.titulaire===me.ref).map(c=>E.classes.n(c)).join(", ")||"—")+C("Devoirs publiés",vis("devoirs").length)+C("Notes saisies",vis("notes").length)+"</div>";
+ else h+=mine().map(k=>{const g=calc(k.id,"all").gen;return'<div class="card"><b>'+esc(k.nom)+'</b> <span class="tag">'+esc(nm("classes",k.classe))+'</span><div class="grid">'+C("Moyenne générale",g==null?"—":g.toFixed(2)+" / 20")+(R==="parent"?C("Solde restant",solde(k.id)+" DT"):"")+"</div></div>"}).join("");
+ return h+'<p style="color:var(--mu)">Année scolaire '+AN+" – tarif annuel : "+TARIF+" DT par élève</p>"}
+function list(e){const c=E[e],ed=canEdit(e),r=rows(e);
+ let h='<div class="bar"><h2>'+c.l+"</h2>"+(ed?'<button class="np" onclick="form(\''+e+'\')">+ Ajouter</button>':"")+"</div>";
+ if(!r.length)return h+'<div class="card empty">Aucun enregistrement. '+(ed?"Utilisez « Ajouter » pour créer le premier.":"")+"</div>";
+ h+='<div class="tw"><table><tr>'+c.cols.map(k=>"<th>"+COL[k]+"</th>").join("")+'<th class="np"></th></tr>';
+ r.forEach(x=>{h+="<tr>"+c.cols.map(k=>{const f=c.f.find(q=>q.k===k)||{};let v=f.t==="ref"?nm(f.r,x[k]):x[k];if(k==="montant")v+=" DT";return"<td>"+esc(v||"—")+"</td>"}).join("");
+  let ex="";
+  if(e==="eleves"&&x.statut==="En attente"&&me.role==="admin")ex='<button class="sm" onclick="valider(\''+x.id+'\')">Valider</button> ';
+  if(e==="paiements")ex='<button class="g sm" onclick="recu(\''+x.id+'\')">Reçu</button> ';
+  if(e==="devoirs"&&me.role==="parent"){const v=(x.vu||[]).includes(me.id);ex='<button class="g sm" onclick="vu(\''+x.id+'\')">'+(v?"✓ Vu":"Marquer vu")+"</button> "}
+  h+='<td class="np">'+ex+(ed?'<button class="g sm" onclick="form(\''+e+"','"+x.id+'\')">Modifier</button> <button class="d sm" onclick="del(\''+e+"','"+x.id+'\')">Supprimer</button>':"")+"</td></tr>"});
+ return h+"</table></div>"}
+function form(e,id){const c=E[e],r=id?byId(e,id):(c.def?c.def():{});
+ const inp=c.f.map(f=>{const v=r[f.k]==null?"":r[f.k],q=f.opt?"":" required";let i;
+  if(f.t==="sel")i='<select name="'+f.k+'">'+f.o.map(o=>"<option"+(o===v?" selected":"")+">"+o+"</option>").join("")+"</select>";
+  else if(f.t==="ref")i='<select name="'+f.k+'"'+q+">"+(f.opt?'<option value="">—</option>':"")+vis(f.r).map(x=>'<option value="'+x.id+'"'+(x.id===v?" selected":"")+">"+esc(E[f.r].n(x))+"</option>").join("")+"</select>";
+  else if(f.t==="area")i='<textarea name="'+f.k+'" rows="3"'+q+">"+esc(v)+"</textarea>";
+  else i='<input name="'+f.k+'" type="'+(f.t||"text")+'" value="'+esc(v)+'"'+q+(f.t==="number"?' step="any" min="0"'+(f.max?' max="'+f.max+'"':""):"")+">";
+  return"<label>"+f.l+i+"</label>"}).join("");
+ modal("<h3>"+(id?"Modifier":"Ajouter")+" – "+c.s+'</h3><form onsubmit="return saveF(event,\''+e+"','"+(id||"")+'\')">'+inp+'<div class="bar"><button type="button" class="g" onclick="closeM()">Annuler</button><button>Enregistrer</button></div></form>')}
+function saveF(ev,e,id){ev.preventDefault();const fd=new FormData(ev.target),d={};E[e].f.forEach(f=>{d[f.k]=f.t==="number"?+fd.get(f.k):fd.get(f.k)});
+ const err=E[e].v&&E[e].v(d,id);if(err){alert(err);return false}
+ if(id){const r=byId(e,id),ch=Object.keys(d).filter(k=>r[k]!==d[k]).map(k=>k+" : "+r[k]+" → "+d[k]).join(" ; ");Object.assign(r,d);log("Modification",e,id,ch)}
+ else{const r=Object.assign({id:e.slice(0,3)+rnd(),annee_scolaire:AN,deleted:false},d);db[e].push(r);log("Création",e,r.id,"");if(E[e].after)E[e].after(r)}
+ save();closeM();render();return false}
+function del(e,id){const b=blockers(e,id);if(b.length){alert("Suppression impossible : cet élément est utilisé dans ("+b.join(", ")+"). Réaffectez ou supprimez d’abord ces éléments.");return}
+ if(!confirm("Confirmer la suppression ?"))return;byId(e,id).deleted=true;log("Suppression logique",e,id,"");save();render()}
+function valider(id){const r=byId("eleves",id);if(!r.classe){alert("Affectez d’abord une classe à cet élève.");form("eleves",id);return}r.statut="Inscrit";log("Validation inscription","eleves",id,"");save();render()}
+function vu(id){const d=byId("devoirs",id);d.vu=d.vu||[];const i=d.vu.indexOf(me.id);i<0?d.vu.push(me.id):d.vu.splice(i,1);save();render()}
+function recu(id){const p=byId("paiements",id),el=byId("eleves",p.eleve)||{};modal("<h3>Reçu n° "+p.id+"</h3><p><b>"+esc(curE.nom)+"</b><br>Année scolaire "+p.annee_scolaire+"</p><p>Élève : "+esc(el.nom)+"<br>Montant : <b>"+p.montant+" DT</b><br>Date : "+p.date+" – Mode : "+p.mode+"<br>Solde restant : "+solde(p.eleve)+' DT</p><div class="bar"><button class="g" onclick="closeM()">Fermer</button><button onclick="window.print()">Imprimer / PDF</button></div>')}
+/* ---------- bulletins ---------- */
+function bullet(){const L=rows("eleves");if(!L.length)return'<h2>Bulletins</h2><div class="card empty">Aucun élève.</div>';
+ if(!L.some(x=>x.id===bsel))bsel=L[0].id;const el=byId("eleves",bsel),b=calc(bsel,btri);
+ const ap=g=>g==null?"—":g>=16?"Excellent":g>=14?"Très bien":g>=12?"Bien":g>=10?"Passable":"Insuffisant";
+ return'<div class="bar np"><h2>Bulletins</h2><div style="display:flex;gap:8px"><select onchange="bsel=this.value;render()">'+L.map(x=>'<option value="'+x.id+'"'+(x.id===bsel?" selected":"")+">"+esc(x.nom)+"</option>").join("")+'</select><select onchange="btri=this.value;render()">'+[["all","Année"],["T1","Trimestre 1"],["T2","Trimestre 2"],["T3","Trimestre 3"]].map(o=>'<option value="'+o[0]+'"'+(o[0]===btri?" selected":"")+">"+o[1]+"</option>").join("")+'</select></div></div><div class="card"><h3>Bulletin – '+esc(el.nom)+'</h3><p>Classe : '+esc(nm("classes",el.classe))+" – Année "+AN+'</p><div class="tw"><table><tr><th>Matière</th><th>Coef.</th><th>Moyenne</th></tr>'+(b.lines.length?b.lines.map(l=>"<tr><td>"+esc(nm("matieres",l.m))+"</td><td>"+l.k+"</td><td>"+l.a.toFixed(2)+"</td></tr>").join(""):'<tr><td colspan="3">Aucune note.</td></tr>')+'</table></div><p><b>Moyenne générale : '+(b.gen==null?"—":b.gen.toFixed(2)+" / 20")+"</b> – "+ap(b.gen)+'</p><button class="np" onclick="window.print()">Imprimer / PDF</button></div>'}
+/* ---------- messagerie ---------- */
+const byMsg=id=>db.messages.find(m=>m.id===id);
+function recips(){const u=users(),R=me.role;
+ if(R==="enseignant"){const cl=vis("classes").filter(c=>c.titulaire===me.ref).map(c=>c.id),p=vis("eleves").filter(e=>cl.includes(e.classe)).map(e=>e.parent);return u.filter(x=>x.id==="admin"||p.includes(x.id))}
+ if(R==="parent"){const t=mine().map(k=>(byId("classes",k.classe)||{}).titulaire);return u.filter(x=>x.id==="admin"||x.id==="compta"||t.includes(x.id))}
+ if(R==="eleve")return u.filter(x=>x.id==="admin");
+ if(R==="compta")return u.filter(x=>x.role==="parent"||x.id==="admin");
+ return u.filter(x=>x.id!==me.id)}
+const mcard=(m,act)=>'<div class="card"><b>'+esc(m.objet)+"</b><br><small>"+(m.type==="annonce"?"Annonce de la Direction":esc(uname(m.from))+" → "+esc(uname(m.to)))+" – "+m.date+'</small><p style="white-space:pre-line;margin:8px 0">'+esc(m.corps)+"</p>"+(act||"")+"</div>";
+function msgView(){const T=[["in","Réception"],["out","Envoyés"],["draft","Brouillons"],["ann","Annonces"],["new","Nouveau message"]];
+ let h='<h2>Messagerie</h2><div class="tabs">'+T.map(t=>'<button class="'+(t[0]===mtab?"":"g")+'" onclick="mtab=\''+t[0]+'\';render()">'+t[1]+"</button>").join("")+"</div>",L;
+ if(mtab==="in"){L=db.messages.filter(m=>m.type==="msg"&&m.statut==="sent"&&m.to===me.id&&!m.hidden.includes(me.id)).reverse();h+=L.length?L.map(m=>mcard(m,'<button class="g sm" onclick="hideM(\''+m.id+'\')">Masquer de ma boîte</button>')).join(""):'<div class="card empty">Aucun message reçu.</div>';
+  const nu=L.filter(m=>!m.lu.includes(me.id));if(nu.length){nu.forEach(m=>m.lu.push(me.id));save();setTimeout(()=>{const n=$("nav");if(n){render()}},0)}}
+ else if(mtab==="out"){L=db.messages.filter(m=>m.type==="msg"&&m.statut==="sent"&&m.from===me.id).reverse();h+=L.length?L.map(m=>mcard(m,'<small>Message envoyé : non modifiable et non supprimable.</small>')).join(""):'<div class="card empty">Aucun message envoyé.</div>'}
+ else if(mtab==="draft"){L=db.messages.filter(m=>m.type==="msg"&&m.statut==="draft"&&m.from===me.id);h+=L.length?L.map(m=>mcard(m,'<button class="g sm" onclick="editD(\''+m.id+'\')">Modifier</button> <button class="d sm" onclick="delD(\''+m.id+'\')">Supprimer</button>')).join(""):'<div class="card empty">Aucun brouillon.</div>'}
+ else if(mtab==="ann"){L=db.messages.filter(m=>m.type==="annonce"&&(me.role==="admin"||m.aud==="all"||m.aud===me.role)).reverse();
+  if(me.role==="admin")h+='<div class="card"><h3>Publier une annonce</h3><form id="af" onsubmit="return pubA(event)"><label>Public<select name="aud"><option value="all">Tous</option><option value="parent">Parents</option><option value="eleve">Élèves</option><option value="enseignant">Enseignants</option></select></label><label>Objet<input name="objet" required></label><label>Message<textarea name="corps" rows="3" required></textarea></label><button>Publier</button> <small>Une annonce publiée ne peut plus être modifiée.</small></form></div>';
+  h+=L.length?L.map(m=>mcard(m)).join(""):'<div class="card empty">Aucune annonce.</div>'}
+ else h+=compose(window._draft);window._draft=null;return h}
+function compose(m){const r=recips();return'<div class="card"><form id="cf" onsubmit="return false"><label>Destinataire<select name="to"><option value="">Choisir…</option>'+r.map(u=>'<option value="'+u.id+'"'+(m&&m.to===u.id?" selected":"")+">"+esc(u.nom)+" ("+ROLE[u.role]+")</option>").join("")+'</select></label><label>Objet<input name="objet" value="'+esc(m?m.objet:"")+'"></label><label>Message<textarea name="corps" rows="5">'+esc(m?m.corps:"")+'</textarea></label><div class="bar"><button class="g" onclick="sendM(false,\''+(m?m.id:"")+'\')">Enregistrer en brouillon</button><button onclick="sendM(true,\''+(m?m.id:"")+'\')">Envoyer</button></div></form></div>'}
+function sendM(send,id){const f=$("#cf"),to=f.elements.to.value,o=f.elements.objet.value.trim(),c=f.elements.corps.value.trim();
+ if(!to||!o||!c){alert("Destinataire, objet et message sont obligatoires.");return}
+ if(!recips().some(u=>u.id===to)){alert("Vous n’avez pas le droit d’écrire à ce destinataire.");return}
+ const d={to,objet:o,corps:c,statut:send?"sent":"draft",date:new Date().toLocaleString("fr-FR")};
+ if(id)Object.assign(byMsg(id),d);else db.messages.push(Object.assign({id:"msg"+Date.now()+rnd(),type:"msg",from:me.id,lu:[],hidden:[]},d));
+ log(send?"Envoi message":"Brouillon","messages",id||"",o);save();mtab=send?"out":"draft";render()}
+function editD(id){window._draft=byMsg(id);mtab="new";render()}
+function delD(id){if(!confirm("Supprimer ce brouillon ?"))return;db.messages=db.messages.filter(m=>m.id!==id);save();render()}
+function hideM(id){byMsg(id).hidden.push(me.id);save();render()}
+function pubA(ev){ev.preventDefault();const f=new FormData(ev.target);db.messages.push({id:"ann"+Date.now()+rnd(),type:"annonce",from:"admin",aud:f.get("aud"),objet:f.get("objet"),corps:f.get("corps"),statut:"sent",date:new Date().toLocaleString("fr-FR"),lu:[],hidden:[]});log("Annonce publiée","messages","",f.get("objet"));save();render();return false}
+function jrn(){return'<h2>Journal des modifications</h2><br><div class="tw"><table><tr><th>Date</th><th>Utilisateur</th><th>Action</th><th>Entité</th><th>Détail</th></tr>'+(db.journal.slice(0,200).map(j=>"<tr><td>"+j.t+"</td><td>"+esc(j.u)+"</td><td>"+esc(j.a)+"</td><td>"+esc(j.e)+"</td><td>"+esc(j.d)+"</td></tr>").join("")||'<tr><td colspan="5">Aucune action enregistrée.</td></tr>')+"</table></div>"}
+/* ---------- console SaaS ---------- */
+function saas(){const L=root.ecoles,act=L.filter(x=>x.statut==="Actif"),cnt=x=>x.data.eleves.filter(e=>!e.deleted).length;
+ return'<div class="bar"><h2>Écoles clientes</h2><button class="np" onclick="formE()">+ Nouvelle école</button></div><div class="grid">'+C("Écoles",L.length)+C("Actives",act.length)+C("Revenu mensuel",act.reduce((s,x)=>s+PLANS[x.plan].prix,0)+" DT")+C("Élèves (total)",L.reduce((s,x)=>s+cnt(x),0))+'</div><br><div class="tw"><table><tr><th>École</th><th>Adresse</th><th>Plan</th><th>Statut</th><th>Élèves</th><th>Créée</th><th></th></tr>'+L.map(x=>{const m=PLANS[x.plan].max;return"<tr><td>"+esc(x.nom)+"</td><td>"+esc(x.slug)+".ecoleplus.tn</td><td>"+x.plan+" ("+PLANS[x.plan].prix+" DT/mois)</td><td><span class=\"tag\">"+x.statut+"</span></td><td>"+cnt(x)+" / "+(m>9999?"illimité":m)+"</td><td>"+x.cree+'</td><td><button class="sm" onclick="enter(\''+x.id+'\')">Ouvrir</button> <button class="g sm" onclick="formE(\''+x.id+'\')">Modifier</button> <button class="d sm" onclick="delE(\''+x.id+'\')">Supprimer</button></td></tr>"}).join("")+"</table></div>"}
+function enter(id){curE=root.ecoles.find(e=>e.id===id);db=curE.data;me=users()[0];view="dash";render()}
+function formE(id){const x=id?root.ecoles.find(e=>e.id===id):{nom:"",slug:"",plan:"Gratuit",statut:"Actif"};
+ modal("<h3>"+(id?"Modifier":"Nouvelle")+' école</h3><form onsubmit="return saveE(event,\''+(id||"")+'\')"><label>Nom de l’école<input name="nom" required value="'+esc(x.nom)+'"></label><label>Sous-domaine (lettres minuscules, chiffres, tirets)<input name="slug" required pattern="[a-z0-9\\-]+" value="'+esc(x.slug)+'"></label><label>Plan<select name="plan">'+Object.keys(PLANS).map(p=>"<option"+(p===x.plan?" selected":"")+">"+p+"</option>").join("")+'</select></label><label>Statut<select name="statut"><option'+(x.statut==="Actif"?" selected":"")+'>Actif</option><option'+(x.statut==="Suspendu"?" selected":"")+'>Suspendu</option></select></label><div class="bar"><button type="button" class="g" onclick="closeM()">Annuler</button><button>Enregistrer</button></div></form>')}
+function saveE(ev,id){ev.preventDefault();const f=new FormData(ev.target),d={nom:f.get("nom"),slug:f.get("slug"),plan:f.get("plan"),statut:f.get("statut")};
+ if(root.ecoles.some(e=>e.slug===d.slug&&e.id!==id)){alert("Ce sous-domaine est déjà utilisé.");return false}
+ if(id){const x=root.ecoles.find(e=>e.id===id),n=x.data.eleves.filter(e=>!e.deleted).length;if(n>PLANS[d.plan].max){alert("Plan impossible : l’école compte déjà "+n+" élèves (limite "+PLANS[d.plan].max+").");return false}Object.assign(x,d)}
+ else root.ecoles.push(Object.assign({id:"ecl"+rnd(),cree:today(),data:emptyData()},d));
+ save();closeM();render();return false}
+function delE(id){if(!confirm("Supprimer cette école et toutes ses données ?"))return;root.ecoles=root.ecoles.filter(e=>e.id!==id);save();render()}
+/* ---------- connexion ---------- */
+function loginHTML(){return'<div class="login"><div class="card"><h2>EcolePlus</h2><p style="color:var(--mu)">Plateforme SaaS de gestion d’écoles primaires – version de démonstration (données enregistrées dans ce navigateur).</p><label>École<select id="ls" onchange="fillU()">'+root.ecoles.map(x=>'<option value="'+x.id+'"'+(x.statut==="Actif"?"":" disabled")+">"+esc(x.nom)+" ("+esc(x.slug)+".ecoleplus.tn)"+(x.statut==="Actif"?"":" – suspendue")+"</option>").join("")+'<option value="__saas">Console Super Admin (plateforme)</option></select></label><label>Je suis<select id="lr" onchange="fillU()">'+Object.keys(ROLE).filter(k=>k!=="super").map(k=>'<option value="'+k+'">'+ROLE[k]+"</option>").join("")+'</select></label><label>Compte<select id="lu"></select></label><button onclick="login()">Se connecter</button></div><div class="card"><h3>Pré-inscription d’un enfant</h3><form onsubmit="return preins(event)"><label>Nom de l’enfant<input name="en" required></label><label>Date de naissance<input name="nd" type="date" required></label><label>Nom du parent<input name="pn" required></label><label>E-mail du parent<input name="pe" type="email" required></label><button>Envoyer la demande</button></form></div><button class="g sm" onclick="if(confirm(\'Réinitialiser les données de démonstration ?\')){try{localStorage.removeItem(KEY)}catch(e){}root=seedRoot();render()}">Réinitialiser la démo</button></div>'}
+function fillU(){const r=$("#lr");if(!r)return;const s=$("#ls").value,sup=s==="__saas";r.disabled=sup;if(sup){db=null;$("#lu").innerHTML='<option value="super">Super Admin</option>';return}
+ curE=root.ecoles.find(e=>e.id===s);if(!curE){$("#lu").innerHTML="";return}db=curE.data;$("#lu").innerHTML=users().filter(u=>u.role===r.value).map(u=>'<option value="'+u.id+'">'+esc(u.nom)+"</option>").join("")}
+function login(){if($("#ls").value==="__saas"){db=null;me={id:"super",nom:"Super Admin",role:"super"}}else me=users().find(u=>u.id===$("#lu").value);if(!me)return;view=MENU[me.role][0];mtab="in";bsel="";log("Connexion","session",me.id,"");save();render()}
+function logout(){me=null;render()}
+function preins(ev){ev.preventDefault();if($("#ls").value==="__saas"||!db){alert("Choisissez d’abord une école.");return false}const f=new FormData(ev.target),p={id:"par"+rnd(),annee_scolaire:AN,deleted:false,nom:f.get("pn"),email:f.get("pe"),tel:""};
+ db.parents.push(p);db.eleves.push({id:"ele"+rnd(),annee_scolaire:AN,deleted:false,nom:f.get("en"),naissance:f.get("nd"),classe:"",parent:p.id,statut:"En attente",medical:""});save();alert("Demande envoyée. L’administration la validera.");ev.target.reset();fillU();return false}
+render();
+</script></body></html>
